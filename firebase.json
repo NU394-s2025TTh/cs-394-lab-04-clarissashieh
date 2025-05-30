@@ -1,5 +1,6 @@
 {
   "firestore": {
+    "database": "(default)",
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
   },
@@ -18,11 +19,17 @@
       "port": 8080
     },
     "hosting": {
-      "port": 5000
+      "port": 6001
     },
     "ui": {
       "enabled": true
     },
     "singleProjectMode": true
+  },
+  "storage": {
+    "rules": "storage.rules"
+  },
+  "database": {
+    "rules": "database.rules.json"
   }
 }
