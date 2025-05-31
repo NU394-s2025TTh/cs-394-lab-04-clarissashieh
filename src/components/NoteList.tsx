@@ -14,27 +14,28 @@ const NoteList: React.FC<NoteListProps> = ({ onEditNote }) => {
   // TODO: load notes using subscribeToNotes from noteService, use useEffect to manage the subscription; try/catch to handle errors (see lab 3)
   // TODO: handle unsubscribing from the notes when the component unmounts
   // TODO: manage state for notes, loading status, and error message
-  const [notes, setNotes] = useState<Notes>(() => {
-    return {
-      '1': {
-        id: '1',
-        title: 'Note 1',
-        content: 'This is the content of note 1.',
-        lastUpdated: Date.now() - 100000,
-      },
-    };
-  });
+  const [notes, setNotes] = useState<Notes>({});
 
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {
     try {
       setIsLoading(true);
-      const unsubscribe = subscribeToNotes(setNotes);
-      setTimeout(() => {
-        setIsLoading(false);
-      }, 100);
-      unsubscribe();
+      const unsubscribe = subscribeToNotes(
+        (incomingNotes: Notes) => {
+          setNotes(incomingNotes);
+          setIsLoading(false);
+        },
+        (err: Error) => {
+          console.error('🚨 [NoteList] subscribeToNotes ERROR:', err);
+          setError(err.message);
+          setIsLoading(false);
+        },
+      );
+
+      return () => {
+        unsubscribe();
+      };
     } catch {
       setIsLoading(false);
       setError('Failed to load notes.');
