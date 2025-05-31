@@ -1,7 +1,8 @@
 // REFERENCE SOLUTION - Do not distribute to students
 // src/components/NoteItem.tsx
-import React from 'react';
+import React, { useState } from 'react';
 
+import { deleteNote } from '../services/noteService';
 import { Note } from '../types/Note';
 
 interface NoteItemProps {
@@ -12,8 +13,27 @@ interface NoteItemProps {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const NoteItem: React.FC<NoteItemProps> = ({ note, onEdit }) => {
   // TODO: manage state for deleting status and error message
+  const [isDeleting, setIsDeleting] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
   // TODO: create a function to handle the delete action, which will display a confirmation (window.confirm) and call the deleteNote function from noteService,
   // and update the deleting status and error message accordingly
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    const confirm = window.confirm('Delete note?');
+    if (!confirm) {
+      setIsDeleting(false);
+      return;
+    }
+    try {
+      await deleteNote(note.id);
+      setTimeout(() => {
+        setIsDeleting(false);
+      }, 10);
+    } catch {
+      setIsDeleting(false);
+      setError('Failed to delete note.');
+    }
+  };
 
   const formatDate = (timestamp: number) => {
     const date = new Date(timestamp);
@@ -70,12 +90,23 @@ const NoteItem: React.FC<NoteItemProps> = ({ note, onEdit }) => {
       <div className="note-header">
         <h3>{note.title}</h3>
         <div className="note-actions">
-          <button className="edit-button">Edit</button>
-          <button className="delete-button">{'Delete'}</button>
+          {onEdit && (
+            <button
+              className="edit-button"
+              onClick={() => onEdit(note)}
+              disabled={isDeleting}
+            >
+              Edit
+            </button>
+          )}
+          <button className="delete-button" onClick={handleDelete} disabled={isDeleting}>
+            {isDeleting ? 'Deleting...' : 'Delete'}
+          </button>
         </div>
       </div>
       <div className="note-content">{note.content}</div>
       <div className="note-footer">
+        {error && <div>{error}</div>}
         <span title={formatDate(note.lastUpdated)}>
           Last updated: {getTimeAgo(note.lastUpdated)}
         </span>
